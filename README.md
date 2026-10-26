@@ -35,5 +35,8 @@ python -m scripts.medir_desempenho
 ```
 Resultados de desempenho e acessibilidade (Lighthouse, axe) em [DESEMPENHO.md](DESEMPENHO.md).
 
+## Implantação
+Passo a passo completo (Gunicorn + Nginx + HTTPS, systemd, backup diário do SQLite) em [DEPLOY.md](DEPLOY.md).
+
 ## Stack
-Python 3.12, Flask 3.x, openpyxl, SQLite, Jinja2, pytest, pip-audit. Produção: Gunicorn + Nginx.
+Python 3.12, Flask 3.x, openpyxl, requests, SQLite, Jinja2, pytest, pip-audit. Produção: Gunicorn + Nginx.
