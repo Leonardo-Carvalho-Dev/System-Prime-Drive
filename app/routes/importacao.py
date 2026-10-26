@@ -11,11 +11,16 @@ bp = Blueprint("importacao", __name__)
 
 
 def _obter_cliente_siprov():
+    placas_demo = current_app.config.get("SIPROV_FALHAS_DEMO", "")
+    placas_que_falham = {p.strip().upper() for p in placas_demo.split(",") if p.strip()}
+
     return obter_cliente(
         current_app.config["SIPROV_MODE"],
         usuario=current_app.config["SIPROV_USUARIO"],
         senha=current_app.config["SIPROV_SENHA"],
         cod_loja=current_app.config["SIPROV_COD_LOJA"],
+        placas_que_falham=placas_que_falham,
+        mensagem_falha="Sem resposta do Siprov." if placas_que_falham else None,
     )
 
 

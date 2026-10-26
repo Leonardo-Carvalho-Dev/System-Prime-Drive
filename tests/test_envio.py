@@ -87,6 +87,53 @@ def test_gerar_relatorio_neutraliza_formula_na_placa(app, criar_usuario):
         assert linha[4] == "'=HYPERLINK(\"http://malicioso\")"
 
 
+def test_siprov_falhas_demo_derruba_as_placas_configuradas_no_confirmar():
+    import tempfile
+    from pathlib import Path
+
+    from app import create_app
+    from app.config import Config
+
+    arquivo_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    arquivo_db.close()
+
+    class ConfigComFalhasDemo(Config):
+        TESTING = True
+        SECRET_KEY = "chave-de-teste"
+        DATABASE_PATH = arquivo_db.name
+        SESSION_COOKIE_SECURE = False
+        SIPROV_FALHAS_DEMO = "ABC1234"
+
+    app = create_app(ConfigComFalhasDemo)
+    client = app.test_client()
+
+    with app.app_context():
+        from werkzeug.security import generate_password_hash
+
+        from app.data import repositorio
+
+        repositorio.criar_usuario("ingrid", "suporte", generate_password_hash("senha", method="scrypt"))
+
+    client.post("/login", data={"nome": "ingrid", "senha": "senha"})
+    conteudo = _planilha_duas_linhas()
+    resposta = client.post(
+        "/",
+        data={"codigo_contrato": "42", "planilha": (BytesIO(conteudo), "p.xlsx")},
+        content_type="multipart/form-data",
+    )
+    id_importacao = resposta.headers["Location"].rstrip("/").split("/")[-1]
+
+    client.post(f"/importacoes/{id_importacao}/confirmar")
+
+    with app.app_context():
+        linhas = {linha["placa"]: (linha["situacao"], linha["mensagem_erro"]) for linha in repositorio.listar_linhas_importacao(int(id_importacao))}
+
+    assert linhas["ABC1234"] == ("falhou", "Sem resposta do Siprov.")
+    assert linhas["ABC1235"][0] == "incluida"
+
+    Path(arquivo_db.name).unlink(missing_ok=True)
+
+
 def test_baixar_relatorio_via_rota(client, criar_usuario, planilha_sem_erros):
     _, nome, senha = criar_usuario()
     client.post("/login", data={"nome": nome, "senha": senha})

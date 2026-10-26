@@ -38,5 +38,8 @@ Resultados de desempenho e acessibilidade (Lighthouse, axe) em [DESEMPENHO.md](D
 ## Implantação
 Passo a passo completo (Gunicorn + Nginx + HTTPS, systemd, backup diário do SQLite) em [DEPLOY.md](DEPLOY.md).
 
+## Validação de usabilidade
+Plano de validação com a Ingrid (3 tarefas, critérios de aceite) em [docs/VALIDACAO.md](docs/VALIDACAO.md); material pronto para a sessão em [docs/validacao/](docs/validacao/).
+
 ## Stack
 Python 3.12, Flask 3.x, openpyxl, requests, SQLite, Jinja2, pytest, pip-audit. Produção: Gunicorn + Nginx.
