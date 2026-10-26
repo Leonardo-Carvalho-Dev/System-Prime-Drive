@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block titulo %}Erro — ImportaFrota Prime Drive{% endblock %}
+
+{% block conteudo %}
+  <div class="cartao">
+    <h2>Não foi possível continuar</h2>
+    <p role="alert">{{ mensagem }}</p>
+    <p><a class="botao secundario" href="{{ url_for('importacao.inicio') }}">Voltar ao início</a></p>
+  </div>
+{% endblock %}
