@@ -1,12 +1,15 @@
 import tempfile
+from io import BytesIO
 from pathlib import Path
 
+import openpyxl
 import pytest
 from werkzeug.security import generate_password_hash
 
 from app import create_app
 from app.config import Config
 from app.data import repositorio
+from app.services.planilha import COLUNAS, EXEMPLO
 
 
 @pytest.fixture
@@ -41,3 +44,33 @@ def criar_usuario(app):
             return id_usuario, nome, senha
 
     return _criar
+
+
+def construir_planilha(linhas: list[list]) -> bytes:
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(["instruções"])
+    ws.append(COLUNAS)
+    for linha in linhas:
+        ws.append(linha)
+    buffer = BytesIO()
+    wb.save(buffer)
+    return buffer.getvalue()
+
+
+@pytest.fixture
+def planilha_sem_erros() -> bytes:
+    linha_a = list(EXEMPLO)
+    linha_a[COLUNAS.index("PLACA")] = "ABC1234"
+    linha_b = list(EXEMPLO)
+    linha_b[COLUNAS.index("PLACA")] = "ABC1235"
+    return construir_planilha([linha_a, linha_b])
+
+
+@pytest.fixture
+def planilha_com_erro() -> bytes:
+    linha_valida = list(EXEMPLO)
+    linha_valida[COLUNAS.index("PLACA")] = "ABC1234"
+    linha_invalida = list(EXEMPLO)
+    linha_invalida[COLUNAS.index("PLACA")] = "PLACA-INVALIDA"
+    return construir_planilha([linha_valida, linha_invalida])

@@ -18,9 +18,11 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     inicializar_db(app.config["DATABASE_PATH"])
 
     from .auth import bp as auth_bp
+    from .routes.importacao import bp as importacao_bp
     from .routes.saude import bp as saude_bp
 
     app.register_blueprint(saude_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(importacao_bp)
 
     return app

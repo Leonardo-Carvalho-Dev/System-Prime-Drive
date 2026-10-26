@@ -70,3 +70,91 @@ def usuario_pode_acessar_importacao(usuario: sqlite3.Row, importacao: sqlite3.Ro
     if usuario is None or importacao is None:
         return False
     return usuario["perfil"] == "suporte" or usuario["id_usuario"] == importacao["id_usuario"]
+
+
+def listar_importacoes_recentes(usuario: sqlite3.Row, limite: int = 10) -> list[sqlite3.Row]:
+    conexao = obter_conexao()
+    if usuario["perfil"] == "suporte":
+        return conexao.execute(
+            "SELECT * FROM importacao ORDER BY data_hora DESC LIMIT ?", (limite,)
+        ).fetchall()
+    return conexao.execute(
+        "SELECT * FROM importacao WHERE id_usuario = ? ORDER BY data_hora DESC LIMIT ?",
+        (usuario["id_usuario"], limite),
+    ).fetchall()
+
+
+def atualizar_situacao_importacao(id_importacao: int, situacao: str) -> None:
+    conexao = obter_conexao()
+    conexao.execute(
+        "UPDATE importacao SET situacao = ? WHERE id_importacao = ?", (situacao, id_importacao)
+    )
+    conexao.commit()
+
+
+def criar_linha_importacao(
+    id_importacao: int,
+    numero_linha: int,
+    placa: str,
+    plano: str,
+    dados_json: str,
+    situacao: str,
+    mensagem_erro: str | None,
+) -> int:
+    conexao = obter_conexao()
+    cursor = conexao.execute(
+        """
+        INSERT INTO linha_importacao
+            (id_importacao, numero_linha, placa, plano, dados_json, situacao, mensagem_erro)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (id_importacao, numero_linha, placa, plano, dados_json, situacao, mensagem_erro),
+    )
+    conexao.commit()
+    return cursor.lastrowid
+
+
+def listar_linhas_importacao(id_importacao: int) -> list[sqlite3.Row]:
+    conexao = obter_conexao()
+    return conexao.execute(
+        "SELECT * FROM linha_importacao WHERE id_importacao = ? ORDER BY numero_linha",
+        (id_importacao,),
+    ).fetchall()
+
+
+def obter_linha_importacao(id_linha: int) -> sqlite3.Row | None:
+    conexao = obter_conexao()
+    return conexao.execute(
+        "SELECT * FROM linha_importacao WHERE id_linha = ?", (id_linha,)
+    ).fetchone()
+
+
+def atualizar_linha_importacao(
+    id_linha: int, placa: str, plano: str, dados_json: str, situacao: str, mensagem_erro: str | None
+) -> None:
+    conexao = obter_conexao()
+    conexao.execute(
+        """
+        UPDATE linha_importacao
+        SET placa = ?, plano = ?, dados_json = ?, situacao = ?, mensagem_erro = ?
+        WHERE id_linha = ?
+        """,
+        (placa, plano, dados_json, situacao, mensagem_erro, id_linha),
+    )
+    conexao.commit()
+
+
+def contar_linhas_com_erro(id_importacao: int) -> int:
+    conexao = obter_conexao()
+    linha = conexao.execute(
+        "SELECT COUNT(*) AS total FROM linha_importacao WHERE id_importacao = ? AND situacao = 'com_erro'",
+        (id_importacao,),
+    ).fetchone()
+    return linha["total"]
+
+
+def excluir_importacao(id_importacao: int) -> None:
+    conexao = obter_conexao()
+    conexao.execute("DELETE FROM linha_importacao WHERE id_importacao = ?", (id_importacao,))
+    conexao.execute("DELETE FROM importacao WHERE id_importacao = ?", (id_importacao,))
+    conexao.commit()
