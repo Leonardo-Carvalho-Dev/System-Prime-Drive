@@ -1,6 +1,9 @@
 from io import BytesIO
 
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
+
+TAMANHO_MAXIMO_BYTES = 5 * 1024 * 1024
+LINHAS_MAXIMAS = 500
 
 COLUNAS = [
     "CPF_CNPJ_ASSOCIADO",
@@ -20,10 +23,11 @@ COLUNAS = [
 ]
 
 INSTRUCOES = (
-    "Preencha uma linha por veículo. Todas as colunas são obrigatórias. "
-    "TIPO_VEICULO deve ser uma destas categorias: Carros - Motos, Utilitário, "
-    "PESADO - SEM RASTREADOR, PESADO - COM RASTREADOR ou Reboque/SemiReboque. "
-    "NOME_PLANO_1 deve ser um plano ativo compatível com o TIPO_VEICULO."
+    "Apague a linha de exemplo (linha 3) antes de enviar. Preencha uma linha por "
+    "veículo, começando na linha 3; todas as colunas são obrigatórias. TIPO_VEICULO "
+    "deve ser uma destas categorias: Carros - Motos, Utilitário, PESADO - SEM "
+    "RASTREADOR, PESADO - COM RASTREADOR ou Reboque/SemiReboque. NOME_PLANO_1 deve "
+    "ser um plano ativo compatível com o TIPO_VEICULO."
 )
 
 EXEMPLO = [
@@ -59,3 +63,37 @@ def gerar_modelo() -> BytesIO:
     wb.save(arquivo)
     arquivo.seek(0)
     return arquivo
+
+
+class PlanilhaInvalida(Exception):
+    pass
+
+
+def ler_planilha(nome_arquivo: str, conteudo: bytes) -> list[dict]:
+    if not nome_arquivo.lower().endswith(".xlsx"):
+        raise PlanilhaInvalida("Envie um arquivo no formato .xlsx.")
+
+    if len(conteudo) > TAMANHO_MAXIMO_BYTES:
+        raise PlanilhaInvalida("O arquivo excede o tamanho máximo de 5 MB.")
+
+    try:
+        wb = load_workbook(BytesIO(conteudo), read_only=True, data_only=True)
+    except Exception as exc:
+        raise PlanilhaInvalida("Não foi possível ler o arquivo. Verifique se é um .xlsx válido.") from exc
+
+    ws = wb.active
+    cabecalho = next(ws.iter_rows(min_row=2, max_row=2, values_only=True), None)
+
+    if cabecalho != tuple(COLUNAS):
+        raise PlanilhaInvalida("As colunas da planilha não correspondem ao modelo esperado.")
+
+    linhas = [
+        {"numero_linha": linha[0].row, "dados": dict(zip(COLUNAS, [celula.value for celula in linha]))}
+        for linha in ws.iter_rows(min_row=3)
+        if any(celula.value is not None for celula in linha)
+    ]
+
+    if len(linhas) > LINHAS_MAXIMAS:
+        raise PlanilhaInvalida(f"A planilha tem mais de {LINHAS_MAXIMAS} linhas.")
+
+    return linhas
