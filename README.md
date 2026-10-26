@@ -31,7 +31,9 @@ Depois entre em `http://127.0.0.1:5000/login`.
 ```bash
 pytest
 pip-audit
+python -m scripts.medir_desempenho
 ```
+Resultados de desempenho e acessibilidade (Lighthouse, axe) em [DESEMPENHO.md](DESEMPENHO.md).
 
 ## Stack
 Python 3.12, Flask 3.x, openpyxl, SQLite, Jinja2, pytest, pip-audit. Produção: Gunicorn + Nginx.
