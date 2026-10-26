@@ -1,6 +1,5 @@
 import json
 import re
-from collections import Counter
 from pathlib import Path
 
 from .planilha import COLUNAS, COMBUSTIVEIS_VALIDOS, TIPOS_SIPROV_VALIDOS
@@ -81,10 +80,10 @@ def _normalizar_placa(placa) -> str:
 
 
 def validar_linhas(linhas: list[dict]) -> tuple[list[dict], list[dict]]:
-    contagem_placas = Counter(
-        _normalizar_placa(linha["dados"].get("PLACA")) for linha in linhas if linha["dados"].get("PLACA")
-    )
-
+    """Valida cada linha, na ordem em que aparecem na planilha. Quando uma placa se
+    repete, só a(s) ocorrência(s) seguinte(s) é(são) marcada(s) com erro — a primeira
+    fica aprovada normalmente, como se fosse o veículo "original"."""
+    placas_vistas: set[str] = set()
     aprovadas = []
     com_erro = []
 
@@ -92,8 +91,10 @@ def validar_linhas(linhas: list[dict]) -> tuple[list[dict], list[dict]]:
         erros = validar_linha(linha["dados"])
 
         placa_normalizada = _normalizar_placa(linha["dados"].get("PLACA"))
-        if placa_normalizada and contagem_placas[placa_normalizada] > 1:
-            erros.append("Placa repetida nesta importação.")
+        if placa_normalizada:
+            if placa_normalizada in placas_vistas:
+                erros.append("Placa repetida nesta importação.")
+            placas_vistas.add(placa_normalizada)
 
         if erros:
             com_erro.append({**linha, "erros": erros})

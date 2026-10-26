@@ -114,13 +114,24 @@ def test_validar_linhas_aceita_planilha_sem_erros():
 
 def test_validar_linhas_com_20_veiculos_e_2_placas_repetidas():
     linhas = _linhas(20)
-    linhas[1]["dados"]["PLACA"] = linhas[0]["dados"]["PLACA"]  # força 2 linhas com a mesma placa
+    linhas[1]["dados"]["PLACA"] = linhas[0]["dados"]["PLACA"]  # repete a placa da linha 0
+    linhas[3]["dados"]["PLACA"] = linhas[2]["dados"]["PLACA"]  # repete a placa da linha 2 (par diferente)
 
     aprovadas, com_erro = validar_linhas(linhas)
 
     assert len(com_erro) == 2
     assert len(aprovadas) == 18
     assert all("Placa repetida" in erro for linha in com_erro for erro in linha["erros"])
+
+
+def test_validar_linhas_so_marca_erro_na_ocorrencia_mais_recente_da_placa():
+    linhas = _linhas(3)
+    linhas[2]["dados"]["PLACA"] = linhas[0]["dados"]["PLACA"]  # linha 2 repete a placa da linha 0
+
+    aprovadas, com_erro = validar_linhas(linhas)
+
+    assert [l["numero_linha"] for l in aprovadas] == [linhas[0]["numero_linha"], linhas[1]["numero_linha"]]
+    assert [l["numero_linha"] for l in com_erro] == [linhas[2]["numero_linha"]]
 
 
 def test_validar_linhas_300_linhas_em_ate_5_segundos():
