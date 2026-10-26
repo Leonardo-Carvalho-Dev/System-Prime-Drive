@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}ImportaFrota Prime Drive{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <a class="pular-para-conteudo" href="#conteudo-principal">Pular para o conteúdo</a>
+
+  <header class="cabecalho">
+    <h1>ImportaFrota <span class="subtitulo">Prime Drive</span></h1>
+    {% if g.usuario %}
+      <div class="info-usuario">
+        <span>Usuária: {{ g.usuario['nome'] }} (perfil {{ g.usuario['perfil'] }})</span>
+        <form method="post" action="{{ url_for('auth.logout') }}">
+          <button type="submit" class="secundario">Sair</button>
+        </form>
+      </div>
+    {% endif %}
+  </header>
+
+  {% block passos %}{% endblock %}
+
+  <main id="conteudo-principal">
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+      {% for categoria, mensagem in mensagens %}
+        <p class="alerta{% if categoria == 'sucesso' %} alerta-sucesso{% endif %}" role="alert">{{ mensagem }}</p>
+      {% endfor %}
+    {% endwith %}
+
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  <p class="rodape">Use apenas dados fictícios em testes e capturas de tela — nunca dados reais de associados.</p>
+</body>
+</html>

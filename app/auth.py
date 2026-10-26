@@ -52,7 +52,7 @@ def login():
             session.clear()
             session.permanent = True
             session["usuario_id"] = usuario["id_usuario"]
-            return redirect(url_for("saude.saude"))
+            return redirect(url_for("importacao.inicio"))
 
     return render_template("auth/login.html", erro=erro)
 

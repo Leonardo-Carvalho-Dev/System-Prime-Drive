@@ -1,14 +1,12 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8">
-  <title>ImportaFrota Prime Drive — Entrar</title>
-</head>
-<body>
-  <main>
-    <h1>Entrar</h1>
+{% extends "base.html" %}
+
+{% block titulo %}Entrar — ImportaFrota Prime Drive{% endblock %}
+
+{% block conteudo %}
+  <div class="cartao cartao-login">
+    <h2>Entrar</h2>
     {% if erro %}
-      <p role="alert">{{ erro }}</p>
+      <p class="alerta" role="alert">{{ erro }}</p>
     {% endif %}
     <form method="post" novalidate>
       <label for="nome">Usuário</label>
@@ -17,8 +15,7 @@
       <label for="senha">Senha</label>
       <input type="password" id="senha" name="senha" required>
 
-      <button type="submit">Entrar</button>
+      <p><button type="submit">Entrar</button></p>
     </form>
-  </main>
-</body>
-</html>
+  </div>
+{% endblock %}

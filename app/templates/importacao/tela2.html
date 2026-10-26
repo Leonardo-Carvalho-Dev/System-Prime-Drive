@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% from "_componentes.html" import indicador_de_passos %}
+
+{% block titulo %}Validar planilha — ImportaFrota Prime Drive{% endblock %}
+
+{% block passos %}{{ indicador_de_passos(2) }}{% endblock %}
+
+{% block conteudo %}
+  <h2>Importação nº {{ importacao["id_importacao"] }} — contrato {{ importacao["codigo_contrato_siprov"] }}</h2>
+  <p>A planilha foi lida. Corrija os erros abaixo para liberar o envio ao Siprov.</p>
+
+  <div class="resumo-numeros">
+    <div class="cartao">
+      <p>Linhas lidas</p>
+      <p class="numero">{{ total_linhas }}</p>
+    </div>
+    <div class="cartao">
+      <p>Aprovadas</p>
+      <p class="numero sucesso">{{ total_aprovadas }}</p>
+    </div>
+    <div class="cartao">
+      <p>Com erro</p>
+      <p class="numero erro">{{ total_com_erro }}</p>
+    </div>
+  </div>
+
+  {% if total_com_erro > 0 %}
+    <p class="alerta" role="alert">
+      <strong>{{ total_com_erro }} linha(s) precisam de correção.</strong><br>
+      {% for linha in linhas if linha["situacao"] == "com_erro" %}
+        Linha {{ linha["numero_linha"] }}: {{ linha["mensagem_erro"] }}<br>
+      {% endfor %}
+    </p>
+  {% else %}
+    <p class="alerta alerta-sucesso" role="status">Todas as linhas estão aprovadas.</p>
+  {% endif %}
+
+  <div class="cartao">
+    <h3 class="visualmente-oculto">Linhas da planilha</h3>
+    <table>
+      <caption class="visualmente-oculto">Linhas da planilha</caption>
+      <thead>
+        <tr>
+          <th scope="col">Linha</th>
+          <th scope="col">Placa</th>
+          <th scope="col">Plano</th>
+          <th scope="col">Situação</th>
+          <th scope="col">Correção</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for linha in linhas %}
+          <tr class="{% if linha['situacao'] == 'com_erro' %}linha-com-erro{% endif %}">
+            <td>{{ linha["numero_linha"] }}</td>
+            <td>{{ linha["placa"] }}</td>
+            <td>{{ linha["plano"] or "(vazio)" }}</td>
+            <td>
+              {% if linha["situacao"] == "com_erro" %}
+                <span class="situacao situacao-com_erro">✘ Erro</span>
+              {% else %}
+                <span class="situacao situacao-aprovada">✔ Aprovada</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if linha["situacao"] == "com_erro" %}
+                <form method="post" action="{{ url_for('importacao.corrigir', id_importacao=importacao['id_importacao'], id_linha=linha['id_linha']) }}">
+                  <label for="placa-{{ linha['id_linha'] }}">Placa (linha {{ linha['numero_linha'] }})</label>
+                  <input type="text" id="placa-{{ linha['id_linha'] }}" name="placa" value="{{ linha['placa'] }}">
+
+                  <label for="plano-{{ linha['id_linha'] }}">Plano (linha {{ linha['numero_linha'] }})</label>
+                  <input type="text" id="plano-{{ linha['id_linha'] }}" name="plano" value="{{ linha['plano'] }}">
+
+                  <button type="submit" class="secundario">✎ Salvar e revalidar</button>
+                </form>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if aprovadas_ocultas > 0 %}
+      <p class="dica">Mostrando {{ linhas|length }} de {{ total_linhas }} linhas. As demais estão aprovadas.</p>
+    {% endif %}
+  </div>
+
+  <form method="post" action="{{ url_for('importacao.confirmar', id_importacao=importacao['id_importacao']) }}">
+    <button type="submit" {% if total_com_erro > 0 %}disabled{% endif %}>Confirmar envio ao Siprov</button>
+    <p class="dica">O botão libera quando não houver nenhuma linha com erro.</p>
+  </form>
+
+  <form method="post" action="{{ url_for('importacao.cancelar', id_importacao=importacao['id_importacao']) }}">
+    <button type="submit" class="secundario">Cancelar importação</button>
+  </form>
+{% endblock %}

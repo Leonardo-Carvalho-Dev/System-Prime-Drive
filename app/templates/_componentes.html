@@ -1,0 +1,9 @@
+{% macro indicador_de_passos(atual) %}
+<nav aria-label="Etapas da importação">
+  <ol class="indicador-de-passos">
+    <li {% if atual == 1 %}aria-current="step"{% endif %}>1. Início</li>
+    <li {% if atual == 2 %}aria-current="step"{% endif %}>2. Validar planilha</li>
+    <li {% if atual == 3 %}aria-current="step"{% endif %}>3. Resultado</li>
+  </ol>
+</nav>
+{% endmacro %}

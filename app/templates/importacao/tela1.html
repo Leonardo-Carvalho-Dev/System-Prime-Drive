@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% from "_componentes.html" import indicador_de_passos %}
+
+{% block titulo %}Início — ImportaFrota Prime Drive{% endblock %}
+
+{% block passos %}{{ indicador_de_passos(1) }}{% endblock %}
+
+{% block conteudo %}
+  <h2>Cadastro de frota por planilha</h2>
+  <p>Escolha uma ação. Para cadastrar uma frota, baixe o modelo, preencha e envie a planilha.</p>
+
+  <div class="grade-cartoes">
+    <div class="cartao">
+      <h3>1. Baixar o modelo</h3>
+      <p>Planilha em branco, em português, com as colunas na mesma ordem do cadastro do Siprov.</p>
+      <a class="botao secundario" href="{{ url_for('importacao.baixar_modelo') }}">⬇ Baixar modelo de planilha</a>
+    </div>
+
+    <div class="cartao">
+      <h3>2. Enviar a planilha da frota</h3>
+      <form method="post" enctype="multipart/form-data">
+        <label for="codigo_contrato">Código do contrato do associado</label>
+        <input type="text" id="codigo_contrato" name="codigo_contrato" required>
+        <p class="dica-campo">Use o código do contrato no Siprov.</p>
+
+        <label for="planilha">Arquivo da planilha (.xlsx, até 5 MB)</label>
+        <input type="file" id="planilha" name="planilha" accept=".xlsx" required>
+
+        <p><button type="submit">➤ Enviar planilha</button></p>
+        <p class="dica-campo">Depois do envio, cada linha será verificada.</p>
+      </form>
+    </div>
+  </div>
+
+  <div class="cartao">
+    <h2>Últimas importações</h2>
+    {% if importacoes %}
+      <table>
+        <caption class="visualmente-oculto">Últimas importações</caption>
+        <thead>
+          <tr>
+            <th scope="col">Nº</th>
+            <th scope="col">Data</th>
+            <th scope="col">Contrato</th>
+            <th scope="col">Linhas</th>
+            <th scope="col">Situação</th>
+            <th scope="col">Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for importacao in importacoes %}
+            <tr>
+              <td>{{ importacao["id_importacao"] }}</td>
+              <td>{{ importacao["data_hora"] }}</td>
+              <td>{{ importacao["codigo_contrato_siprov"] }}</td>
+              <td>{{ importacao["total_linhas"] }}</td>
+              <td>
+                {% if importacao["situacao"] in ("concluida",) %}
+                  <span class="situacao situacao-aprovada">✔ Concluída</span>
+                {% elif importacao["situacao"] in ("parcial", "falhou") %}
+                  <span class="situacao situacao-com_erro">✘ Parcial</span>
+                {% else %}
+                  <span class="situacao">{{ importacao["situacao"] }}</span>
+                {% endif %}
+              </td>
+              <td><a href="{{ url_for('importacao.validar', id_importacao=importacao['id_importacao']) }}">Ver</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>Nenhuma importação ainda.</p>
+    {% endif %}
+  </div>
+{% endblock %}
