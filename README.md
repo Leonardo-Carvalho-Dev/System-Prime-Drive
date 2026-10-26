@@ -1,5 +1,7 @@
 # ImportaFrota Prime Drive
 
+[![CI](https://github.com/Leonardo-Carvalho-Dev/System-Prime-Drive/actions/workflows/ci.yml/badge.svg)](https://github.com/Leonardo-Carvalho-Dev/System-Prime-Drive/actions/workflows/ci.yml)
+
 Ferramenta web que cadastra em massa os itens (veículo + plano) de um associado no Siprov, a partir de uma planilha `.xlsx`. Reduz o trabalho hoje feito item por item pela equipe de suporte da cooperativa Prime Drive.
 
 ## Fluxo (3 telas)
