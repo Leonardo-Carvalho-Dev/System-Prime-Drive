@@ -21,6 +21,12 @@ flask --app app run
 ```
 Acesse `http://127.0.0.1:5000/saude` — deve responder `ok`.
 
+Crie um usuário (senha digitada no terminal, nunca salva no código):
+```bash
+python criar_usuario.py ingrid suporte
+```
+Depois entre em `http://127.0.0.1:5000/login`.
+
 ## Como testar
 ```bash
 pytest
