@@ -144,6 +144,24 @@ def atualizar_linha_importacao(
     conexao.commit()
 
 
+def atualizar_resultado_envio_linha(id_linha: int, situacao: str, mensagem_erro: str | None) -> None:
+    conexao = obter_conexao()
+    conexao.execute(
+        "UPDATE linha_importacao SET situacao = ?, mensagem_erro = ? WHERE id_linha = ?",
+        (situacao, mensagem_erro, id_linha),
+    )
+    conexao.commit()
+
+
+def listar_linhas_por_situacao(id_importacao: int, situacoes: tuple[str, ...]) -> list[sqlite3.Row]:
+    conexao = obter_conexao()
+    marcadores = ",".join("?" for _ in situacoes)
+    return conexao.execute(
+        f"SELECT * FROM linha_importacao WHERE id_importacao = ? AND situacao IN ({marcadores}) ORDER BY numero_linha",
+        (id_importacao, *situacoes),
+    ).fetchall()
+
+
 def contar_linhas_com_erro(id_importacao: int) -> int:
     conexao = obter_conexao()
     linha = conexao.execute(

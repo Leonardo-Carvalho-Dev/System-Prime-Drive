@@ -1,11 +1,22 @@
-from flask import Blueprint, flash, g, redirect, render_template, request, send_file, url_for
+from flask import Blueprint, current_app, flash, g, redirect, render_template, request, send_file, url_for
 
 from ..auth import login_obrigatorio
 from ..data import repositorio
-from ..services.importacao import corrigir_linha, criar_importacao_a_partir_da_planilha
+from ..data.siprov import obter_cliente
+from ..services.importacao import corrigir_linha, criar_importacao_a_partir_da_planilha, enviar_itens_aprovados
 from ..services.planilha import PlanilhaInvalida, gerar_modelo
+from ..services.relatorio import gerar_relatorio
 
 bp = Blueprint("importacao", __name__)
+
+
+def _obter_cliente_siprov():
+    return obter_cliente(
+        current_app.config["SIPROV_MODE"],
+        usuario=current_app.config["SIPROV_USUARIO"],
+        senha=current_app.config["SIPROV_SENHA"],
+        cod_loja=current_app.config["SIPROV_COD_LOJA"],
+    )
 
 
 @bp.route("/", methods=["GET", "POST"])
@@ -100,8 +111,57 @@ def confirmar(id_importacao):
         return redirect(url_for("importacao.validar", id_importacao=id_importacao))
 
     repositorio.atualizar_situacao_importacao(id_importacao, "pronta")
-    flash("Importação confirmada. O envio ao Siprov será feito na próxima etapa.", "sucesso")
-    return redirect(url_for("importacao.validar", id_importacao=id_importacao))
+    enviar_itens_aprovados(id_importacao, _obter_cliente_siprov())
+    return redirect(url_for("importacao.resultado", id_importacao=id_importacao))
+
+
+@bp.route("/importacoes/<int:id_importacao>/resultado")
+@login_obrigatorio
+def resultado(id_importacao):
+    importacao = repositorio.obter_importacao_por_id(id_importacao)
+    if importacao is None or not repositorio.usuario_pode_acessar_importacao(g.usuario, importacao):
+        flash("Importação não encontrada.")
+        return redirect(url_for("importacao.inicio"))
+
+    linhas = repositorio.listar_linhas_importacao(id_importacao)
+    incluidas = [linha for linha in linhas if linha["situacao"] == "incluida"]
+    falhas = [linha for linha in linhas if linha["situacao"] == "falhou"]
+
+    return render_template(
+        "importacao/tela3.html",
+        importacao=importacao,
+        total_linhas=len(linhas),
+        total_incluidas=len(incluidas),
+        falhas=falhas,
+    )
+
+
+@bp.route("/importacoes/<int:id_importacao>/reenviar", methods=["POST"])
+@login_obrigatorio
+def reenviar(id_importacao):
+    importacao = repositorio.obter_importacao_por_id(id_importacao)
+    if importacao is None or not repositorio.usuario_pode_acessar_importacao(g.usuario, importacao):
+        flash("Importação não encontrada.")
+        return redirect(url_for("importacao.inicio"))
+
+    enviar_itens_aprovados(id_importacao, _obter_cliente_siprov())
+    return redirect(url_for("importacao.resultado", id_importacao=id_importacao))
+
+
+@bp.route("/importacoes/<int:id_importacao>/relatorio.xlsx")
+@login_obrigatorio
+def baixar_relatorio(id_importacao):
+    importacao = repositorio.obter_importacao_por_id(id_importacao)
+    if importacao is None or not repositorio.usuario_pode_acessar_importacao(g.usuario, importacao):
+        flash("Importação não encontrada.")
+        return redirect(url_for("importacao.inicio"))
+
+    return send_file(
+        gerar_relatorio(id_importacao),
+        as_attachment=True,
+        download_name=f"relatorio-importacao-{id_importacao}.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 
 
 @bp.route("/importacoes/<int:id_importacao>/cancelar", methods=["POST"])
