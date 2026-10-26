@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Ambiente e segredos
+.env
+
+# Banco de dados
+*.db
+*.sqlite
+*.sqlite3
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Ferramentas locais (não fazem parte do sistema entregue)
+.claude/
+cerebro/
+
+# Testes e cobertura
+.pytest_cache/
+.coverage
+htmlcov/
