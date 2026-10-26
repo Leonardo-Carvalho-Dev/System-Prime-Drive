@@ -1,6 +1,5 @@
-import pytest
-
 from app.data.siprov import FakeSiprovClient, ResultadoItem, obter_cliente
+from app.data.siprov.real import RealSiprovClient
 
 
 def test_fake_client_tem_sucesso_por_padrao():
@@ -44,6 +43,8 @@ def test_obter_cliente_modo_fake_retorna_fake_client():
     assert isinstance(cliente, FakeSiprovClient)
 
 
-def test_obter_cliente_modo_real_ainda_nao_implementado():
-    with pytest.raises(NotImplementedError):
-        obter_cliente("real")
+def test_obter_cliente_modo_real_retorna_real_client():
+    cliente = obter_cliente("real", usuario="u", senha="s", cod_loja=5409)
+
+    assert isinstance(cliente, RealSiprovClient)
+    assert cliente.cod_loja == 5409
