@@ -77,6 +77,24 @@ def test_validar_linha_detecta_plano_incompativel_com_categoria():
     assert any("Plano" in erro for erro in erros)
 
 
+def test_validar_linha_detecta_combustivel_invalido():
+    dados = _linha_valida(COMBUSTIVEL="Hibrido")
+    erros = validar_linha(dados)
+    assert any("COMBUSTIVEL" in erro for erro in erros)
+
+
+@pytest.mark.parametrize("combustivel", ["flex", "FLEX", " Flex "])
+def test_validar_linha_aceita_combustivel_em_qualquer_caixa(combustivel):
+    dados = _linha_valida(COMBUSTIVEL=combustivel)
+    assert validar_linha(dados) == []
+
+
+def test_validar_linha_detecta_tipo_siprov_invalido():
+    dados = _linha_valida(TIPO_SIPROV="CARRO")
+    erros = validar_linha(dados)
+    assert any("TIPO_SIPROV" in erro for erro in erros)
+
+
 def _linhas(quantidade: int) -> list[dict]:
     linhas = []
     for i in range(quantidade):

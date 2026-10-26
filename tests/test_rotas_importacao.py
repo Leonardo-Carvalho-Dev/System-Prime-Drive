@@ -133,17 +133,20 @@ def test_confirmar_bloqueado_enquanto_houver_erro(app, client, criar_usuario, pl
     assert importacao["situacao"] == "em_validacao"
 
 
-def test_confirmar_funciona_sem_erros(app, client, criar_usuario, planilha_sem_erros):
+def test_confirmar_envia_ao_siprov_e_conclui_sem_erros(app, client, criar_usuario, planilha_sem_erros):
     _, nome, senha = criar_usuario()
     _logar(client, nome, senha)
     resposta = _enviar_planilha(client, planilha_sem_erros)
     id_importacao = int(resposta.headers["Location"].rstrip("/").split("/")[-1])
 
-    client.post(f"/importacoes/{id_importacao}/confirmar")
+    resposta_confirmar = client.post(f"/importacoes/{id_importacao}/confirmar")
 
+    assert f"/importacoes/{id_importacao}/resultado" in resposta_confirmar.headers["Location"]
     with app.app_context():
         importacao = repositorio.obter_importacao_por_id(id_importacao)
-    assert importacao["situacao"] == "pronta"
+        linhas = repositorio.listar_linhas_importacao(id_importacao)
+    assert importacao["situacao"] == "concluida"
+    assert all(linha["situacao"] == "incluida" for linha in linhas)
 
 
 def test_cancelar_exclui_a_importacao(app, client, criar_usuario, planilha_sem_erros):

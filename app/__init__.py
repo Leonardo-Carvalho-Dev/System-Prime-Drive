@@ -1,8 +1,15 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from flask import Flask
 
 from .config import Config
+
+
+def formatar_data_br(valor):
+    try:
+        return datetime.fromisoformat(valor).strftime("%d/%m/%Y %H:%M")
+    except (TypeError, ValueError):
+        return valor
 
 
 def create_app(config_class: type[Config] = Config) -> Flask:
@@ -24,5 +31,7 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     app.register_blueprint(saude_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(importacao_bp)
+
+    app.jinja_env.filters["data_br"] = formatar_data_br
 
     return app

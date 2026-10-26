@@ -3,7 +3,7 @@ import re
 from collections import Counter
 from pathlib import Path
 
-from .planilha import COLUNAS
+from .planilha import COLUNAS, COMBUSTIVEIS_VALIDOS, TIPOS_SIPROV_VALIDOS
 
 PLACA_ANTIGA = re.compile(r"^[A-Z]{3}[0-9]{4}$")
 PLACA_MERCOSUL = re.compile(r"^[A-Z]{3}[0-9][A-Z][0-9]{2}$")
@@ -37,6 +37,17 @@ def plano_valido(nome_plano, categoria_veiculo) -> bool:
     )
 
 
+def codigo_plano(nome_plano, categoria_veiculo) -> int | None:
+    for plano in PLANOS_VALIDOS:
+        if (
+            plano["ativo"]
+            and plano["nome"] == nome_plano
+            and plano["categoria_veiculo"] in (categoria_veiculo, "Todos")
+        ):
+            return plano["codigo"]
+    return None
+
+
 def validar_linha(dados: dict) -> list[str]:
     erros = []
 
@@ -53,6 +64,14 @@ def validar_linha(dados: dict) -> list[str]:
 
     if not plano_valido(dados["NOME_PLANO_1"], dados["TIPO_VEICULO"]):
         erros.append("Plano inválido, inativo ou incompatível com o tipo de veículo informado.")
+
+    combustivel = str(dados["COMBUSTIVEL"]).strip().upper()
+    if combustivel not in COMBUSTIVEIS_VALIDOS:
+        erros.append("COMBUSTIVEL deve ser um de: " + ", ".join(COMBUSTIVEIS_VALIDOS) + ".")
+
+    tipo_siprov = str(dados["TIPO_SIPROV"]).strip().upper()
+    if tipo_siprov not in TIPOS_SIPROV_VALIDOS:
+        erros.append("TIPO_SIPROV deve ser um de: " + ", ".join(TIPOS_SIPROV_VALIDOS) + ".")
 
     return erros
 

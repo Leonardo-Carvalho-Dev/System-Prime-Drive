@@ -2,8 +2,9 @@ import json
 from datetime import datetime, timezone
 
 from ..data import repositorio
+from ..data.siprov.base import SiprovClient
 from .planilha import ler_planilha
-from .validacao import validar_linhas
+from .validacao import codigo_plano, validar_linhas
 
 
 def criar_importacao_a_partir_da_planilha(usuario, codigo_contrato_siprov: str, nome_arquivo: str, conteudo: bytes) -> int:
@@ -74,3 +75,37 @@ def corrigir_linha(id_linha: int, placa: str, nome_plano: str) -> None:
     )
 
     revalidar_importacao(linha_salva["id_importacao"])
+
+
+def _preparar_dados_para_siprov(dados: dict) -> dict:
+    return {
+        **dados,
+        "CODIGO_PLANO_SIPROV": codigo_plano(dados.get("NOME_PLANO_1"), dados.get("TIPO_VEICULO")),
+        "CATEGORIA_SIPROV": str(dados.get("TIPO_SIPROV") or "").strip().upper(),
+        "COMBUSTIVEL_SIPROV": str(dados.get("COMBUSTIVEL") or "").strip().upper(),
+    }
+
+
+def enviar_itens_aprovados(id_importacao: int, cliente: SiprovClient) -> None:
+    importacao = repositorio.obter_importacao_por_id(id_importacao)
+    linhas_pendentes = repositorio.listar_linhas_por_situacao(id_importacao, ("aprovada", "falhou"))
+
+    for linha in linhas_pendentes:
+        dados = json.loads(linha["dados_json"])
+        dados_siprov = _preparar_dados_para_siprov(dados)
+
+        if dados_siprov["CODIGO_PLANO_SIPROV"] is None:
+            repositorio.atualizar_resultado_envio_linha(
+                linha["id_linha"], "falhou", "Não foi possível localizar o código do plano no catálogo."
+            )
+            continue
+
+        resultado = cliente.criar_item(importacao["codigo_contrato_siprov"], dados_siprov)
+        situacao = "incluida" if resultado.sucesso else "falhou"
+        repositorio.atualizar_resultado_envio_linha(linha["id_linha"], situacao, resultado.mensagem)
+
+    todas_as_linhas = repositorio.listar_linhas_importacao(id_importacao)
+    if all(linha["situacao"] == "incluida" for linha in todas_as_linhas):
+        repositorio.atualizar_situacao_importacao(id_importacao, "concluida")
+    else:
+        repositorio.atualizar_situacao_importacao(id_importacao, "parcial")

@@ -51,7 +51,7 @@
           {% for importacao in importacoes %}
             <tr>
               <td>{{ importacao["id_importacao"] }}</td>
-              <td>{{ importacao["data_hora"] }}</td>
+              <td>{{ importacao["data_hora"]|data_br }}</td>
               <td>{{ importacao["codigo_contrato_siprov"] }}</td>
               <td>{{ importacao["total_linhas"] }}</td>
               <td>

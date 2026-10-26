@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "_componentes.html" import indicador_de_passos %}
+
+{% block titulo %}Resultado — ImportaFrota Prime Drive{% endblock %}
+
+{% block passos %}{{ indicador_de_passos(3) }}{% endblock %}
+
+{% block conteudo %}
+  <h2>Resultado da importação nº {{ importacao["id_importacao"] }}</h2>
+  <p>Contrato {{ importacao["codigo_contrato_siprov"] }} • enviado em {{ importacao["data_hora"]|data_br }}</p>
+
+  {% if falhas %}
+    <p class="alerta alerta-aviso" role="status">
+      <strong>Importação concluída com {{ falhas|length }} falha(s).</strong><br>
+      {{ total_incluidas }} item(ns) foram incluídos no Siprov. {{ falhas|length }} item(ns) não foram incluídos e podem ser reenviados.
+    </p>
+  {% else %}
+    <p class="alerta alerta-sucesso" role="status">
+      <strong>Importação concluída com sucesso.</strong> Todos os {{ total_incluidas }} itens foram incluídos no Siprov.
+    </p>
+  {% endif %}
+
+  <div class="resumo-numeros">
+    <div class="cartao">
+      <p>Itens enviados</p>
+      <p class="numero">{{ total_linhas }}</p>
+    </div>
+    <div class="cartao">
+      <p>Incluídos</p>
+      <p class="numero sucesso">{{ total_incluidas }}</p>
+    </div>
+    <div class="cartao">
+      <p>Com falha</p>
+      <p class="numero erro">{{ falhas|length }}</p>
+    </div>
+  </div>
+
+  {% if falhas %}
+    <div class="cartao">
+      <h3>Itens que falharam</h3>
+      <table>
+        <caption class="visualmente-oculto">Itens que falharam</caption>
+        <thead>
+          <tr>
+            <th scope="col">Linha</th>
+            <th scope="col">Placa</th>
+            <th scope="col">Plano</th>
+            <th scope="col">Motivo da falha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for linha in falhas %}
+            <tr class="linha-com-erro">
+              <td>{{ linha["numero_linha"] }}</td>
+              <td>{{ linha["placa"] }}</td>
+              <td>{{ linha["plano"] }}</td>
+              <td><span class="situacao situacao-com_erro">✘ {{ linha["mensagem_erro"] }}</span></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  <p>
+    {% if falhas %}
+      <form method="post" action="{{ url_for('importacao.reenviar', id_importacao=importacao['id_importacao']) }}" class="form-inline">
+        <button type="submit">↻ Reenviar apenas as {{ falhas|length }} falha(s)</button>
+      </form>
+    {% endif %}
+    <a class="botao secundario" href="{{ url_for('importacao.baixar_relatorio', id_importacao=importacao['id_importacao']) }}">⬇ Baixar relatório</a>
+    <a class="botao secundario" href="{{ url_for('importacao.inicio') }}">Nova importação</a>
+  </p>
+{% endblock %}

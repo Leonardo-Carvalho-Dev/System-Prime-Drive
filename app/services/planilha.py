@@ -17,17 +17,34 @@ COLUNAS = [
     "ANO_MODELO",
     "COMBUSTIVEL",
     "TIPO_VEICULO",
+    "TIPO_SIPROV",
     "COR",
     "NOME_PLANO_1",
     "VALOR_PLANO_1",
 ]
 
+COMBUSTIVEIS_VALIDOS = ["GASOLINA", "ETANOL", "FLEX", "DIESEL", "GNV", "ELETRICO", "OUTRO"]
+TIPOS_SIPROV_VALIDOS = [
+    "MOTOCICLETA",
+    "LEVE",
+    "UTILITARIO",
+    "PICKUP",
+    "CAMINHAO",
+    "ONIBUS",
+    "BICICLETA",
+    "OUTRO",
+]
+
 INSTRUCOES = (
     "Apague a linha de exemplo (linha 3) antes de enviar. Preencha uma linha por "
-    "veículo, começando na linha 3; todas as colunas são obrigatórias. TIPO_VEICULO "
-    "deve ser uma destas categorias: Carros - Motos, Utilitário, PESADO - SEM "
-    "RASTREADOR, PESADO - COM RASTREADOR ou Reboque/SemiReboque. NOME_PLANO_1 deve "
-    "ser um plano ativo compatível com o TIPO_VEICULO."
+    "veículo, começando na linha 3; todas as colunas são obrigatórias. COMBUSTIVEL "
+    "deve ser um de: " + ", ".join(COMBUSTIVEIS_VALIDOS) + ". TIPO_VEICULO deve ser "
+    "uma destas categorias: Carros - Motos, Utilitário, PESADO - SEM RASTREADOR, "
+    "PESADO - COM RASTREADOR ou Reboque/SemiReboque (usada para validar o plano). "
+    "TIPO_SIPROV deve ser um de: " + ", ".join(TIPOS_SIPROV_VALIDOS) + " (categoria "
+    "exata exigida pelo Siprov no envio — ex.: separar MOTOCICLETA de LEVE dentro de "
+    "\"Carros - Motos\"). NOME_PLANO_1 deve ser um plano ativo compatível com o "
+    "TIPO_VEICULO."
 )
 
 EXEMPLO = [
@@ -40,8 +57,9 @@ EXEMPLO = [
     "Uno Fire 1.6",
     2010,
     2010,
-    "Flex",
+    "FLEX",
     "Carros - Motos",
+    "LEVE",
     "Prata",
     "Plano Prime Drive Completo",
     7.2,
@@ -97,3 +115,14 @@ def ler_planilha(nome_arquivo: str, conteudo: bytes) -> list[dict]:
         raise PlanilhaInvalida(f"A planilha tem mais de {LINHAS_MAXIMAS} linhas.")
 
     return linhas
+
+
+CARACTERES_DE_FORMULA = ("=", "+", "-", "@")
+
+
+def neutralizar_celula(valor):
+    """Evita injeção de fórmula: uma célula de texto que comece com =, +, - ou @
+    vira texto literal (prefixo de aspas simples), nunca é executada pelo Excel."""
+    if isinstance(valor, str) and valor.startswith(CARACTERES_DE_FORMULA):
+        return "'" + valor
+    return valor
