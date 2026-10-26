@@ -1,5 +1,12 @@
 import os
 
+from dotenv import load_dotenv
+
+# Carrega o .env da raiz do projeto, se existir. Em produção, o systemd já injeta as
+# variáveis via EnvironmentFile; load_dotenv() nunca sobrescreve o que já está no
+# ambiente, então é seguro chamar sempre.
+load_dotenv()
+
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "")
