@@ -36,6 +36,18 @@ def plano_valido(nome_plano, categoria_veiculo) -> bool:
     )
 
 
+def planos_disponiveis(categoria_veiculo) -> list[str]:
+    """Nomes dos planos ativos compatíveis com a categoria de veículo informada,
+    na mesma fonte (PLANOS_VALIDOS) usada por plano_valido/codigo_plano."""
+    vistos: set[str] = set()
+    nomes = []
+    for plano in PLANOS_VALIDOS:
+        if plano["ativo"] and plano["categoria_veiculo"] in (categoria_veiculo, "Todos") and plano["nome"] not in vistos:
+            vistos.add(plano["nome"])
+            nomes.append(plano["nome"])
+    return nomes
+
+
 def codigo_plano(nome_plano, categoria_veiculo) -> int | None:
     for plano in PLANOS_VALIDOS:
         if (

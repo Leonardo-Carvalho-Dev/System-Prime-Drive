@@ -74,3 +74,11 @@ def planilha_com_erro() -> bytes:
     linha_invalida = list(EXEMPLO)
     linha_invalida[COLUNAS.index("PLACA")] = "PLACA-INVALIDA"
     return construir_planilha([linha_valida, linha_invalida])
+
+
+@pytest.fixture
+def planilha_com_plano_invalido() -> bytes:
+    linha_invalida = list(EXEMPLO)
+    linha_invalida[COLUNAS.index("PLACA")] = "ABC1236"
+    linha_invalida[COLUNAS.index("NOME_PLANO_1")] = "Plano Que Não Existe"
+    return construir_planilha([linha_invalida])

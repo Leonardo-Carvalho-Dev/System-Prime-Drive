@@ -1,3 +1,5 @@
+import json
+
 from flask import Blueprint, current_app, flash, g, redirect, render_template, request, send_file, url_for
 
 from ..auth import login_obrigatorio
@@ -6,6 +8,7 @@ from ..data.siprov import obter_cliente
 from ..services.importacao import corrigir_linha, criar_importacao_a_partir_da_planilha, enviar_itens_aprovados
 from ..services.planilha import PlanilhaInvalida, gerar_modelo
 from ..services.relatorio import gerar_relatorio
+from ..services.validacao import planos_disponiveis
 
 bp = Blueprint("importacao", __name__)
 
@@ -76,6 +79,13 @@ def validar(id_importacao):
     linhas_exibidas = com_erro + aprovadas[:limite_aprovadas_exibidas]
     linhas_exibidas.sort(key=lambda linha: linha["numero_linha"])
     aprovadas_ocultas = len(aprovadas) - min(len(aprovadas), limite_aprovadas_exibidas)
+
+    linhas_exibidas = [
+        {**dict(linha), "planos_disponiveis": planos_disponiveis(json.loads(linha["dados_json"]).get("TIPO_VEICULO"))}
+        if linha["situacao"] == "com_erro"
+        else dict(linha)
+        for linha in linhas_exibidas
+    ]
 
     return render_template(
         "importacao/tela2.html",

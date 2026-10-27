@@ -149,6 +149,53 @@ def test_confirmar_envia_ao_siprov_e_conclui_sem_erros(app, client, criar_usuari
     assert all(linha["situacao"] == "incluida" for linha in linhas)
 
 
+def test_tela2_renderiza_select_com_planos_validos(client, criar_usuario, planilha_com_plano_invalido):
+    _, nome, senha = criar_usuario()
+    _logar(client, nome, senha)
+
+    resposta = _enviar_planilha(client, planilha_com_plano_invalido)
+    resposta_tela2 = client.get(resposta.headers["Location"])
+    html = resposta_tela2.data.decode("utf-8")
+
+    assert "<select" in html
+    assert '<option value="Plano Prime Drive Completo"' in html
+    assert '<option value="Plano Que Não Existe"' not in html
+
+
+def test_corrigir_com_plano_invalido_continua_rejeitado(app, client, criar_usuario, planilha_com_plano_invalido):
+    _, nome, senha = criar_usuario()
+    _logar(client, nome, senha)
+    resposta = _enviar_planilha(client, planilha_com_plano_invalido)
+    id_importacao = int(resposta.headers["Location"].rstrip("/").split("/")[-1])
+
+    with app.app_context():
+        linha = next(
+            linha for linha in repositorio.listar_linhas_importacao(id_importacao) if linha["situacao"] == "com_erro"
+        )
+
+    client.post(
+        f"/importacoes/{id_importacao}/linhas/{linha['id_linha']}",
+        data={"placa": linha["placa"], "plano": "Plano Forjado Fora Da Lista"},
+    )
+
+    with app.app_context():
+        linha_apos = repositorio.obter_linha_importacao(linha["id_linha"])
+    assert linha_apos["situacao"] == "com_erro"
+    assert "inválido" in linha_apos["mensagem_erro"]
+
+
+def test_mensagem_de_erro_aparece_na_linha(client, criar_usuario, planilha_com_plano_invalido):
+    _, nome, senha = criar_usuario()
+    _logar(client, nome, senha)
+
+    resposta = _enviar_planilha(client, planilha_com_plano_invalido)
+    resposta_tela2 = client.get(resposta.headers["Location"])
+
+    html = resposta_tela2.data.decode("utf-8")
+    assert '<p class="mensagem-erro-linha">' in html
+    assert "Plano inválido" in html
+
+
 def test_cancelar_exclui_a_importacao(app, client, criar_usuario, planilha_sem_erros):
     _, nome, senha = criar_usuario()
     _logar(client, nome, senha)
