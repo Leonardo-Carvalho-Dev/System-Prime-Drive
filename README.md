@@ -9,7 +9,7 @@ Ferramenta web que cadastra em massa os itens (veículo + plano) de um associado
 2. **Validar planilha** — erros por linha, correção na própria tela, confirmação do envio.
 3. **Resultado** — itens incluídos/falhas, reenvio só das falhas, download do relatório.
 
-O plano completo de construção (fases, requisitos, regras) está em [PLANO_CONSTRUCAO.md](PLANO_CONSTRUCAO.md).
+O plano completo de construção (fases, requisitos, regras) está em [docs/PLANO_CONSTRUCAO.md](docs/PLANO_CONSTRUCAO.md).
 
 ## Como rodar
 ```bash
@@ -43,3 +43,16 @@ Plano de validação com a Ingrid (3 tarefas, critérios de aceite) em [docs/VAL
 
 ## Stack
 Python 3.12, Flask 3.x, openpyxl, requests, SQLite, Jinja2, pytest, pip-audit. Produção: Gunicorn + Nginx.
+
+## Integração contínua
+O pipeline de CI (`.github/workflows/ci.yml`) roda `pytest` e `pip-audit` em todo push e PR para a `main`. Os primeiros runs (#1–#13) falhavam por um bug no próprio workflow (`pytest` puro não encontrava o pacote `app` — corrigido no PR [#9](https://github.com/Leonardo-Carvalho-Dev/System-Prime-Drive/pull/9)); desde então o CI passa de verdade em todo PR. Detalhes e evidência em [evidencias/prs-revisados.md](evidencias/prs-revisados.md).
+
+## Transparência sobre o uso de IA
+
+Este sistema foi desenvolvido com o apoio do **Claude Code** (assistente de IA da Anthropic) e do Claude para planejamento e redação. A divisão do trabalho foi:
+
+- **Meu trabalho:** identificação do problema real junto à equipe de suporte da Prime Drive, definição do escopo do MVP, decisões de arquitetura e de produto, revisão e merge de cada Pull Request, teste manual do fluxo completo (incluindo o ensaio da Fase 9), configuração do ambiente local, fornecimento das credenciais e documentos reais do Siprov usados na integração, identificação de dois bugs reais durante os testes (CI quebrado desde o início e `.env` não sendo carregado), escolha de dados fictícios e acompanhamento das rodadas de validação.
+- **Apoio da IA:** geração de código e testes a partir do plano de construção (`docs/`), sugestões de estrutura, mensagens de commit e revisão de textos.
+- **Responsabilidade:** todo o código foi revisado e testado por mim antes de entrar na `main`, por meio de Pull Requests. Eu respondo pelo conteúdo do repositório.
+
+O uso de dados reais foi evitado: todos os exemplos, testes e capturas usam dados fictícios.

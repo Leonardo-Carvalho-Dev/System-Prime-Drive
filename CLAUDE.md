@@ -1,6 +1,6 @@
 # Regras do projeto ImportaFrota Prime Drive
 
-Plano completo de fases e requisitos: `PLANO_CONSTRUCAO.md`.
+Plano completo de fases e requisitos: `docs/PLANO_CONSTRUCAO.md`.
 
 ## Regras que valem sempre
 1. Só dados fictícios em testes, exemplos e capturas (contrato `CT-TESTE-001`, placas `TST...`). Nunca dados reais de associados.
