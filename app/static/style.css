@@ -286,6 +286,13 @@ tr.linha-com-erro {
   color: var(--cor-texto-suave);
 }
 
+.mensagem-erro-linha {
+  color: var(--cor-erro);
+  font-weight: bold;
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+
 .rodape {
   max-width: 1040px;
   margin: 0 auto;

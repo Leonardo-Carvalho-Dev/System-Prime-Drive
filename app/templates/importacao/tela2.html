@@ -49,6 +49,7 @@
         </tr>
       </thead>
       <tbody>
+        {% set ns = namespace(primeiro_erro_focado=false) %}
         {% for linha in linhas %}
           <tr class="{% if linha['situacao'] == 'com_erro' %}linha-com-erro{% endif %}">
             <td>{{ linha["numero_linha"] }}</td>
@@ -63,12 +64,21 @@
             </td>
             <td>
               {% if linha["situacao"] == "com_erro" %}
+                {% set autofoco = not ns.primeiro_erro_focado %}
+                {% set ns.primeiro_erro_focado = true %}
                 <form method="post" action="{{ url_for('importacao.corrigir', id_importacao=importacao['id_importacao'], id_linha=linha['id_linha']) }}">
+                  <p class="mensagem-erro-linha">{{ linha["mensagem_erro"] }}</p>
+
                   <label for="placa-{{ linha['id_linha'] }}">Placa (linha {{ linha['numero_linha'] }})</label>
-                  <input type="text" id="placa-{{ linha['id_linha'] }}" name="placa" value="{{ linha['placa'] }}">
+                  <input type="text" id="placa-{{ linha['id_linha'] }}" name="placa" value="{{ linha['placa'] }}" {% if autofoco %}autofocus{% endif %}>
 
                   <label for="plano-{{ linha['id_linha'] }}">Plano (linha {{ linha['numero_linha'] }})</label>
-                  <input type="text" id="plano-{{ linha['id_linha'] }}" name="plano" value="{{ linha['plano'] }}">
+                  <select id="plano-{{ linha['id_linha'] }}" name="plano">
+                    <option value="">Selecione um plano...</option>
+                    {% for nome_plano in linha["planos_disponiveis"] %}
+                      <option value="{{ nome_plano }}" {% if nome_plano == linha["plano"] %}selected{% endif %}>{{ nome_plano }}</option>
+                    {% endfor %}
+                  </select>
 
                   <button type="submit" class="secundario">✎ Salvar e revalidar</button>
                 </form>
