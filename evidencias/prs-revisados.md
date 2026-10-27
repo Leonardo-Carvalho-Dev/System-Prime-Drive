@@ -11,7 +11,10 @@ Repositório: https://github.com/Leonardo-Carvalho-Dev/System-Prime-Drive
 | [#7](https://github.com/Leonardo-Carvalho-Dev/System-Prime-Drive/pull/7) | 5 | Integração com o Siprov (RF04) | Mergeado |
 | [#8](https://github.com/Leonardo-Carvalho-Dev/System-Prime-Drive/pull/8) | 6 | Tela 3, relatório e reenvio (RF04, RF05, RF06) | Mergeado |
 | [#9](https://github.com/Leonardo-Carvalho-Dev/System-Prime-Drive/pull/9) | 7 | Segurança e qualidade (RNF02, RNF03) + fix do CI | Mergeado |
+| [#10](https://github.com/Leonardo-Carvalho-Dev/System-Prime-Drive/pull/10) | 8 | Implantação e evidências | Mergeado |
+| [#11](https://github.com/Leonardo-Carvalho-Dev/System-Prime-Drive/pull/11) | 9 (preparação) | Validação com a Ingrid (planilha de teste, roteiro, ficha) | Mergeado |
+| [#12](https://github.com/Leonardo-Carvalho-Dev/System-Prime-Drive/pull/12) | — | Fix: carregar o `.env` (faltava `python-dotenv`) | Mergeado |
 
-Cada PR corresponde a uma fase do [PLANO_CONSTRUCAO.md](../PLANO_CONSTRUCAO.md), com commits no padrão Conventional Commits em português e descrição do que mudou, requisito atendido e como testar.
+Cada PR corresponde a uma fase do [PLANO_CONSTRUCAO.md](../docs/PLANO_CONSTRUCAO.md), com commits no padrão Conventional Commits em português e descrição do que mudou, requisito atendido e como testar.
 
-**Nota sobre o CI:** os runs #1–#13 (PRs #3 a #9, incluindo os mesmos PRs listados acima no momento da abertura) falharam por um bug no `ci.yml` (`pytest` puro não enxergava o pacote `app`) — corrigido no próprio PR #9. A partir do run #14 o CI passa de verdade (ver `ci-verde.jpg`).
+**Nota sobre o CI:** os runs #1–#13 (PRs #3 a #9, incluindo os mesmos PRs listados acima no momento da abertura) falharam por um bug no `ci.yml` (`pytest` puro não enxergava o pacote `app`) — corrigido no próprio PR #9. A partir do run #14 o CI passa de verdade (ver `ci-verde.jpg`), e continuou verde em todos os PRs seguintes (#10, #11, #12).
