@@ -1,0 +1,8 @@
+# Normaliza o fim de linha no repositório (sempre LF), independente do sistema
+# operacional de quem commita. Evita os avisos "LF will be replaced by CRLF"
+# do Git no Windows e garante diffs consistentes entre colaboradores.
+* text=auto eol=lf
+
+*.jpg binary
+*.png binary
+*.db binary
