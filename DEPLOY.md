@@ -1,7 +1,46 @@
 # Implantação em produção
 
+## Deploy atual: Render (ambiente de demonstração pública)
+
+Para a entrega da Atividade 3, o MVP está publicado no [Render](https://render.com),
+usando o Blueprint [`render.yaml`](render.yaml) deste repositório — sem precisar
+configurar nada manualmente além das variáveis de ambiente.
+
+**Como foi feito:**
+1. Conta gratuita no Render, conectada à conta do GitHub (`Leonardo-Carvalho-Dev`).
+2. **New +** → **Blueprint** → selecionar o repositório `System-Prime-Drive`. O Render lê
+   o `render.yaml` e já propõe o serviço `importafrota-prime-drive` (plano Free, Python,
+   `pip install -r requirements.txt`, `gunicorn 'app:create_app()' --bind 0.0.0.0:$PORT`),
+   com health check em `/saude`.
+3. Variáveis de ambiente definidas pelo Blueprint: `SECRET_KEY` (gerada automaticamente
+   pelo Render, nunca digitada por mim), `SIPROV_MODE=fake` (nunca testar contra contrato
+   real, regra 4 do `CLAUDE.md`), `SESSION_COOKIE_SECURE=true`, `DATABASE_PATH`.
+4. Deploy automático a cada push na `main` (CI do GitHub Actions continua rodando os
+   testes antes; o Render só builda/sobe depois).
+5. Usuário de demonstração criado uma vez, via aba **Shell** do próprio serviço no Render:
+   ```bash
+   python criar_usuario.py demo-avaliador suporte
+   ```
+   (usuário e senha fictícios, só para o avaliador navegar pelo sistema — nunca dado real).
+
+**Limitação conhecida:** o plano Free do Render não tem disco persistente — o arquivo
+SQLite é recriado a cada deploy/reinício do serviço (ele dorme após ~15 min sem uso e
+perde o estado ao acordar). Isso é aceitável aqui porque todos os dados usados em
+demonstração são fictícios (regra 1 do `CLAUDE.md`); para produção real, trocar por um
+disco persistente do Render (plano pago) ou um banco gerenciado.
+
+**Monitoramento:** um monitor HTTP gratuito no [UptimeRobot](https://uptimerobot.com)
+verifica `GET /saude` a cada 5 minutos; alerta por e-mail quando o status muda para
+*DOWN* (ver print em anexo na entrega).
+
+---
+
+## Alternativa: servidor Linux próprio (Gunicorn + Nginx)
+
 Guia genérico para uma instância Linux pequena (testado mentalmente contra Ubuntu
 22.04/24.04 LTS). Ajuste nomes de usuário, domínio e caminhos conforme o servidor real.
+Use este caminho quando houver um domínio e um servidor próprios — o deploy no Render
+acima cobre a necessidade atual de uma URL pública para avaliação.
 
 ## 1. Pré-requisitos no servidor
 
