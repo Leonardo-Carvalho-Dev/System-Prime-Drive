@@ -36,9 +36,9 @@ python -m scripts.medir_desempenho
 Resultados de desempenho e acessibilidade (Lighthouse, axe) em [DESEMPENHO.md](DESEMPENHO.md).
 
 ## Implantação
-Publicado no Render para avaliação da Atividade 3: <!-- URL_PUBLICA_RENDER -->. Processo
-de deploy e monitoramento em [DEPLOY.md](DEPLOY.md), que também traz o guia genérico de
-servidor próprio (Gunicorn + Nginx + HTTPS, systemd, backup diário do SQLite).
+Publicado no Render para avaliação da Atividade 3: https://system-prime-drive.onrender.com.
+Processo de deploy e monitoramento em [DEPLOY.md](DEPLOY.md), que também traz o guia
+genérico de servidor próprio (Gunicorn + Nginx + HTTPS, systemd, backup diário do SQLite).
 
 ## Validação de usabilidade
 Plano de validação com a Ingrid (3 tarefas, critérios de aceite) em [docs/VALIDACAO.md](docs/VALIDACAO.md); material pronto para a sessão em [docs/validacao/](docs/validacao/).
