@@ -1,5 +1,7 @@
 import sqlite3
 
+from werkzeug.security import generate_password_hash
+
 from .db import obter_conexao
 
 
@@ -11,6 +13,15 @@ def criar_usuario(nome: str, perfil: str, senha_hash: str) -> int:
     )
     conexao.commit()
     return cursor.lastrowid
+
+
+def semear_usuario_se_ausente(nome: str, perfil: str, senha: str) -> None:
+    """Cria o usuário com a senha dada, só se ainda não existir. Usado em ambientes de
+    demonstração sem acesso a shell (ex.: deploy no Render) — nunca sobrescreve um
+    usuário já existente."""
+    if not nome or not senha or obter_usuario_por_nome(nome) is not None:
+        return
+    criar_usuario(nome, perfil, generate_password_hash(senha, method="scrypt"))
 
 
 def obter_usuario_por_nome(nome: str) -> sqlite3.Row | None:

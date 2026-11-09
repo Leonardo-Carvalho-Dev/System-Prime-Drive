@@ -17,11 +17,12 @@ configurar nada manualmente além das variáveis de ambiente.
    real, regra 4 do `CLAUDE.md`), `SESSION_COOKIE_SECURE=true`, `DATABASE_PATH`.
 4. Deploy automático a cada push na `main` (CI do GitHub Actions continua rodando os
    testes antes; o Render só builda/sobe depois).
-5. Usuário de demonstração criado uma vez, via aba **Shell** do próprio serviço no Render:
-   ```bash
-   python criar_usuario.py demo-avaliador suporte
-   ```
-   (usuário e senha fictícios, só para o avaliador navegar pelo sistema — nunca dado real).
+5. Usuário de demonstração: preenchi `SEED_USUARIO_NOME` e `SEED_USUARIO_SENHA` (ambos
+   fictícios) na tela de criação do Blueprint. O próprio `create_app()` cria esse usuário
+   uma vez no primeiro start, se ele ainda não existir (`repositorio.semear_usuario_se_ausente`)
+   — não precisa de acesso a shell, que o plano Free do Render não oferece. Alternativa,
+   se o plano tiver shell: `python criar_usuario.py <nome> <perfil>` (senha digitada na
+   hora, nunca no código).
 
 **Limitação conhecida:** o plano Free do Render não tem disco persistente — o arquivo
 SQLite é recriado a cada deploy/reinício do serviço (ele dorme após ~15 min sem uso e

@@ -20,3 +20,8 @@ class Config:
     DATABASE_PATH = os.environ.get("DATABASE_PATH", "importafrota.db")
     # Desligar só em desenvolvimento local sem HTTPS (nunca em produção).
     SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
+    # Opcional: cria esse usuário no primeiro start se ele ainda não existir (ex.: ambiente
+    # de demonstração sem acesso a shell). Vazio por padrão — nenhum usuário é criado.
+    SEED_USUARIO_NOME = os.environ.get("SEED_USUARIO_NOME", "")
+    SEED_USUARIO_SENHA = os.environ.get("SEED_USUARIO_SENHA", "")
+    SEED_USUARIO_PERFIL = os.environ.get("SEED_USUARIO_PERFIL", "suporte")
