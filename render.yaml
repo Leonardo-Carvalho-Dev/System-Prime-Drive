@@ -18,3 +18,10 @@ services:
         value: "true"
       - key: DATABASE_PATH
         value: importafrota.db
+      # Opcional: cria esse usuário no primeiro start, se ele ainda não existir, sem
+      # precisar de acesso a shell. Preencha com nome e senha fictícios na tela do
+      # Render antes de criar o serviço; deixe em branco para não criar ninguém.
+      - key: SEED_USUARIO_NOME
+        sync: false
+      - key: SEED_USUARIO_SENHA
+        sync: false

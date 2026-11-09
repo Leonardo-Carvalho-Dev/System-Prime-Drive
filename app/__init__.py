@@ -24,10 +24,16 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     if not app.testing:
         logging.basicConfig(level=logging.INFO)
 
+    from .data import repositorio
     from .data.db import fechar_conexao, inicializar_db
 
     app.teardown_appcontext(fechar_conexao)
     inicializar_db(app.config["DATABASE_PATH"])
+
+    with app.app_context():
+        repositorio.semear_usuario_se_ausente(
+            app.config["SEED_USUARIO_NOME"], app.config["SEED_USUARIO_PERFIL"], app.config["SEED_USUARIO_SENHA"]
+        )
 
     from .auth import bp as auth_bp
     from .routes.importacao import bp as importacao_bp
